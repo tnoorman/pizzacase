@@ -1,0 +1,88 @@
+﻿@page "{handler?}"
+@using PizzaCase.Data
+@using System.Globalization
+@using PizzaCase.Models
+@model IndexModel
+@{
+    ViewData["Title"] = "Home page";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>PizzaCase</title>
+</head>
+<body>
+<h1>Pizza Store</h1>
+<div class="left" style="float: left; width:  50%;">
+
+    @if (!Model.Order) {
+        //<button id="websocketButton" onclick="openConnection()" style="margin-right: 60%">Upgrade Connection</button>
+        <form method="post" asp-page-handler="Customer" id="Customer">
+            <label for="Name">Naam:
+                <input asp-for="Name">
+            </label>
+            <br>
+            <label for="Street">Straatnaam:
+                <input asp-for="Street">
+            </label>
+            <br>
+            <label for="HouseNumber">Straatnummer:
+                <input asp-for="HouseNumber">
+            </label>
+            <br>
+            <label for="ZipCode">Postcode:
+                <input asp-for="ZipCode">
+            </label>
+            <br>
+            <label for="City">Woonplaats:
+                <input asp-for="City">
+            </label>
+            <br>
+            <input type="submit" value="Verder" id="CustomerSubmit">
+        </form>
+    } else  {
+        <form method="post" asp-page-handler="AddPizza" id="AddPizza">
+            <label for="PizzaName">Selecteer een pizza:
+                <select asp-for="PizzaName">
+                    @foreach (int pizzaName in Enum.GetValues(typeof(PizzaName))) {
+                        <option value="@pizzaName">@Enum.GetName(typeof(PizzaName), pizzaName)</option>
+                    }
+                </select>
+                <br>
+                @foreach (int topping in Enum.GetValues(typeof(ToppingNames))) {
+                    <input name="ExtraToppings[@topping].ToppingName" type="hidden" value="@topping"/>
+                    <input name="ExtraToppings[@topping].Add" type="checkbox" value="true"/>@Enum.GetName(typeof(ToppingNames), topping)
+                    <input name="ExtraToppings[@topping].Amount" type="number" value="1"/>
+                    <br>
+                }
+            </label>
+            <br>
+            <label for="Amount">
+                <span>Aantal pizzas:</span>
+                <input type="number" name="amount" id="Amount" value="1">
+            </label>
+            <input type="submit" value="toevoegen" id="PizzaAddSubmit">
+        </form>
+    }
+</div>
+
+@if (Model.Order) {
+    <div class="right" style="float: right; width:  50%;">
+        <h1>Bestellingoverzicht</h1>
+        <p>Bezorgadres: @Model.CurrentOrder.OrderCustomer.ToString()</p>
+        @foreach (PizzaAmount pizzaAmount in Model.CurrentOrder.Pizzas) {
+            <p>@pizzaAmount.Amount @pizzaAmount.PizzaType.ToString()</p>
+        }
+        <p>Bestelling geplaatst om: @Model.CurrentOrder.TimeOfOrder.ToString(CultureInfo.CurrentCulture)</p>
+    </div>
+}
+</body>
+<script src="js/main.js"></script>
+<script>
+    // Convert objects using enum helper
+    const pizzaEnum = @(EnumHelper.EnumToString<PizzaName>());
+    const toppingEnum = @(EnumHelper.EnumToString<ToppingNames>());
+</script>
+</html>
